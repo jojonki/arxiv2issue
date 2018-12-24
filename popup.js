@@ -47,7 +47,7 @@ function create_issue(title, body, year, callback) {
 				callback('Failed to post an issue.');
 			} else {
 				var resp = JSON.parse(request.responseText);
-				callback('Issue posted: #' + resp.number);
+				callback('Issue posted!: #' + resp.number);
 
 			}
 		};
