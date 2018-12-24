@@ -1,6 +1,6 @@
 # arxiv2issue
 
-You can quickly post an Github issue from arXiv! This is released at Chrome Extensions Store.
+You can quickly post an Github issue from arXiv! [This is released at Chrome Extensions Store](https://chrome.google.com/webstore/detail/arxiv2issue/gfddkcdgeahicjkhpopmacpknbdnllhb/related?hl=ja&gl=JP).
 
 <img width="777" alt="screen shot 2018-12-24 at 9 17 19 pm" src="https://user-images.githubusercontent.com/166852/50399240-5228d100-07c1-11e9-9b4d-cd004a7b4277.png">
 
