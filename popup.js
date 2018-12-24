@@ -23,7 +23,7 @@ function modifyDOM() {
 	return document.body.innerHTML;
 }
 
-function create_issue(title, body, year) {
+function create_issue(title, body, year, callback) {
 	var base_url = 'https://api.github.com/repos';
 	chrome.storage.sync.get(['uname', 'repo', 'token'], function(data) {
 		var uname = data.uname;
@@ -33,7 +33,6 @@ function create_issue(title, body, year) {
 
 		var url = url += '?access_token=' + token;
 		console.log('URL: ' + url);
-		alert('URL: ' + url);
 
 		var data = JSON.stringify({
 			'title': ['🚧', year + ':', title].join(' '),
@@ -43,12 +42,13 @@ function create_issue(title, body, year) {
 		request.open('POST', url);
 		request.onreadystatechange = function () {
 			if (request.readyState != 4) {
-			} else if (request.status != 200) {
-				console.log('fail');
+			} else if (request.status != 201) {
 				console.log(request.responseText);
+				callback('Failed to post an issue.');
 			} else {
-				console.log('success');
-				console.log(request.responseText);
+				var resp = JSON.parse(request.responseText);
+				callback('Issue posted: #' + resp.number);
+
 			}
 		};
 		request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -67,6 +67,10 @@ function copyToClipboard(text) {
 	document.execCommand('Copy');
 	document.body.removeChild(input);
 };
+
+function showPopup(msg) {
+	$('#result').text(msg);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
 	getCurrentTabUrl((url) => {
@@ -89,8 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 
 			copyToClipboard(info);
-			$('#result').text('copied!');
-			create_issue(title, info, year);
+			// $('#result').text('copied!!');
+			create_issue(title, info, year, showPopup);
 
 			// hide popup automatically
 			setTimeout(function () {
