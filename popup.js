@@ -94,7 +94,7 @@ function create_issue(title, body, year, issues, callback) {
                     callback('Failed to post an issue.');
                 } else {
                     var resp = JSON.parse(request.responseText);
-                    callback('Issue posted!: #' + resp.number);
+                    callback('Issue posted!', uname, repo, resp.number);
 
                 }
             };
@@ -116,8 +116,13 @@ function copyToClipboard(text) {
     document.body.removeChild(input);
 };
 
-function showPopup(msg) {
-    $('#result').text(msg);
+function showPopup(msg, uname, repo, issue_num) {
+    if (issue_num) {
+        var url = 'https://github.com/' + uname + '/' + repo + '/issues/' + issue_num;
+        $('#result').html('<a target="_blank" href="' + url + '">' + msg + ' #' + issue_num + '</a>');
+    } else {
+        $('#result').text(msg);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -148,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // hide popup automatically
             setTimeout(function () {
                 window.close();
-            }, 3000);
+            }, 6000);
         });
     });
 });
