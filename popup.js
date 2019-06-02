@@ -136,8 +136,15 @@ document.addEventListener('DOMContentLoaded', () => {
             var authors = authors.replace(/\n/g, '');
             var comment = $dom.find('div.metatable').find('.comments').text();
             var date = $dom.find('div.dateline').text().split(' ')
-            var year = date[date.length - 1]; // "2018)"
-            year = year.substring(0, year.length - 1) // remove last character ")"
+            var year = '';
+            var pattern = /^\d{4}$/g;
+            for (var i=0; i<date.length; i++) {
+                result = date[i].match(pattern);
+                if (result != undefined && result.length > 0) {
+                    year = result[0];
+                    break
+                }
+            }
 
             if (comment != '') {
                 info = [title, authors, comment, url].join('\n');
