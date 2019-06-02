@@ -3,7 +3,7 @@
   "name": "arxiv2issue",
   "short_name": "arxiv2issue",
   "description": "",
-  "version": "0.3",
+  "version": "0.4",
   "background": { "scripts": ["background.js"] },
   "page_action": {
 	  "default_icon": {
