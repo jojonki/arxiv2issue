@@ -135,15 +135,12 @@ document.addEventListener('DOMContentLoaded', () => {
             var authors = $dom.find('div.authors').text().split('Authors:')[1];
             var authors = authors.replace(/\n/g, '');
             var comment = $dom.find('div.metatable').find('.comments').text();
-            var date = $dom.find('div.dateline').text().split(' ')
+            var date = $dom.find('div.dateline').text().trim()
             var year = '';
-            var pattern = /^\d{4}$/g;
-            for (var i=0; i<date.length; i++) {
-                result = date[i].match(pattern);
-                if (result != undefined && result.length > 0) {
-                    year = result[0];
-                    break
-                }
+            var pattern = /\s?([12]{1}\d{3})\)?/; // 1XXXX or 2XXXX
+            result = date.match(pattern);
+            if (result != undefined && result.length > 1) {
+                year = result[1];
             }
 
             if (comment != '') {
