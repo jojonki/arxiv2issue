@@ -45,7 +45,11 @@ function get_issues(title, body, year, callback) {
                 var resp = JSON.parse(request.responseText);
                 var issues = []
                 for (var i=0; i<resp.length; i++) {
-                    issues.push(resp[i].title);
+                    issues.push({
+                        'title': resp[i].title,
+                        'html_url': resp[i].html_url,
+                        'number': resp[i].number
+                    });
                 }
                 console.log(issues);
                 callback(issues);
@@ -69,16 +73,16 @@ function create_issue(title, body, year, issues, callback) {
 
         console.log('TITLE:' + title);
         var issue_title = ['🚧', year + ':', title].join(' ');
-        duplicated = false;
+        duplicated_issue = null;
         for (var i=0; i<issues.length; i++) {
-            if (issues[i].indexOf(title) >= 0) {
-                duplicated = true;
+            if (issues[i].title.indexOf(title) >= 0) {
+                duplicated_issue = issues[i];
                 break;
             }
         }
 
-        if (duplicated) {
-            callback('You have already posted this paper.');
+        if (duplicated_issue) {
+            callback('You have already posted this paper, ', uname, repo, duplicated_issue.number);
         } else {
             var data = JSON.stringify({
                 'title': issue_title,
@@ -95,7 +99,6 @@ function create_issue(title, body, year, issues, callback) {
                 } else {
                     var resp = JSON.parse(request.responseText);
                     callback('Issue posted!', uname, repo, resp.number);
-
                 }
             };
             request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
