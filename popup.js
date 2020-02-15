@@ -31,11 +31,11 @@ function get_issues(title, body, year, callback) {
         var token = data.token;
         var url = [base_url, uname, repo, 'issues'].join('/');
 
-        var url = url += '?access_token=' + token;
         console.log('URL: ' + url);
 
         var request = new XMLHttpRequest();
         request.open('GET', url);
+        request.setRequestHeader('Authorization', 'Bearer' + token);
         request.onreadystatechange = function () {
             if (request.readyState != 4) {
             } else if (request.status != 200) {
