@@ -1,7 +1,46 @@
-ARXIV_URL = 'https://arxiv.org/*';
+"use strict";
+
+let ARXIV_URL = 'https://arxiv.org/*';
+
+function postIssue(arxiv_url, tab) {
+    $.ajax({
+        type: "GET",
+        url: arxiv_url,
+        success: function (data) {
+            let $dom = $($.parseHTML(data));
+            let title = $dom.find('h1.title').text().split('Title:')[1];
+            let authors = $dom.find('div.authors').text().split('Authors:')[1];
+            authors = authors.replace(/\n/g, '');
+            let comment = $dom.find('div.metatable').find('.comments').text();
+            let info = null;
+            let date = $dom.find('div.dateline').text().trim()
+            let year = '';
+            let pattern = /\s?([12]{1}\d{3})\)?/; // 1XXXX or 2XXXX
+            let result = date.match(pattern);
+            if (result != undefined && result.length > 1) {
+                year = result[1];
+            }
+
+            if (comment != '') {
+                info = [title, authors, comment, arxiv_url].join('\n');
+            } else {
+                info = [title, authors, arxiv_url].join('\n');
+            }
+            copyToClipboard(info);
+            getIssues(title, info, year, function(issues) {
+                createIssue(title, info, year, issues, showPopup);
+            });
+
+            // hide popup automatically
+            setTimeout(function () {
+                window.close();
+            }, 10000);
+        }
+    });
+}
 
 function getCurrentTabUrl(callback) {
-    var queryInfo = {
+    let queryInfo = {
         url: ARXIV_URL,
         active: true,
         currentWindow: true
@@ -9,8 +48,8 @@ function getCurrentTabUrl(callback) {
 
     chrome.tabs.query(queryInfo, (tabs) => {
         if (tabs.length > 0) {
-            var tab = tabs[0];
-            var url = tab.url;
+            let tab = tabs[0];
+            let url = tab.url;
             console.assert(typeof url == 'string', 'tab.url should be a string');
             callback(url);
         } else {
@@ -23,28 +62,28 @@ function modifyDOM() {
     return document.body.innerHTML;
 }
 
-function get_issues(title, body, year, callback) {
-    var base_url = 'https://api.github.com/repos';
+function getIssues(title, body, year, callback) {
+    let base_url = 'https://api.github.com/repos';
     chrome.storage.sync.get(['uname', 'repo', 'token'], function(data) {
-        var uname = data.uname;
-        var repo = data.repo;
-        var token = data.token;
-        var url = [base_url, uname, repo, 'issues'].join('/');
+        let uname = data.uname;
+        let repo = data.repo;
+        let token = data.token;
+        let url = [base_url, uname, repo, 'issues'].join('/');
 
         console.log('URL: ' + url);
 
-        var request = new XMLHttpRequest();
+        let request = new XMLHttpRequest();
         request.open('GET', url);
-        request.setRequestHeader('Authorization', 'Bearer' + token);
+        request.setRequestHeader('Authorization', 'Bearer ' + token);
         request.onreadystatechange = function () {
             if (request.readyState != 4) {
             } else if (request.status != 200) {
                 console.log(request.responseText);
                 callback('Failed to post an issue.');
             } else {
-                var resp = JSON.parse(request.responseText);
-                var issues = []
-                for (var i=0; i<resp.length; i++) {
+                let resp = JSON.parse(request.responseText);
+                let issues = []
+                for (let i=0; i<resp.length; i++) {
                     issues.push({
                         'title': resp[i].title,
                         'html_url': resp[i].html_url,
@@ -59,22 +98,22 @@ function get_issues(title, body, year, callback) {
     });
 }
 
-function create_issue(title, body, year, issues, callback) {
-    var base_url = 'https://api.github.com/repos';
+function createIssue(title, body, year, issues, callback) {
+    let base_url = 'https://api.github.com/repos';
     chrome.storage.sync.get(['uname', 'repo', 'token'], function(data) {
-        var uname = data.uname;
-        var repo = data.repo;
-        var token = data.token;
+        let uname = data.uname;
+        let repo = data.repo;
+        let token = data.token;
         console.log(issues);
-        var url = [base_url, uname, repo, 'issues'].join('/');
-
-        var url = url += '?access_token=' + token;
-        console.log('URL: ' + url);
+        let url = [base_url, uname, repo, 'issues'].join('/');
+        // url = url += '?access_token=' + token;
+        // alert('POST URL: ' + url);
 
         console.log('TITLE:' + title);
-        var issue_title = ['🚧', year + ':', title].join(' ');
-        duplicated_issue = null;
-        for (var i=0; i<issues.length; i++) {
+        let issue_title = ['🚧', year + ':', title].join(' ');
+        let duplicated_issue = null;
+        for (let i=0; i<issues.length; i++) {
+            console.log('registered issue: ' + issues[i].title);
             if (issues[i].title.indexOf(title) >= 0) {
                 duplicated_issue = issues[i];
                 break;
@@ -84,25 +123,26 @@ function create_issue(title, body, year, issues, callback) {
         if (duplicated_issue) {
             callback('You have already posted this paper, ', uname, repo, duplicated_issue.number);
         } else {
-            var data = JSON.stringify({
+            let data = JSON.stringify({
                 'title': issue_title,
                 'body': body
             });
 
-            var request = new XMLHttpRequest();
+            let request = new XMLHttpRequest();
             request.open('POST', url);
+            request.setRequestHeader('Authorization', 'Bearer ' + token);
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            request.setRequestHeader('Accept', 'application/vnd.github.symmetra-preview+json');
             request.onreadystatechange = function () {
                 if (request.readyState != 4) {
                 } else if (request.status != 201) {
-                    console.log(request.responseText);
-                    callback('Failed to post an issue.');
+                    alert(request.status + " " + request.responseText);
+                    callback('Failed to post an issue. ' + request.responseText);
                 } else {
-                    var resp = JSON.parse(request.responseText);
+                    let resp = JSON.parse(request.responseText);
                     callback('Issue posted!', uname, repo, resp.number);
                 }
             };
-            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            request.setRequestHeader('Accept', 'application/vnd.github.symmetra-preview+json');
             request.send(data);
         }
     });
@@ -121,7 +161,7 @@ function copyToClipboard(text) {
 
 function showPopup(msg, uname, repo, issue_num) {
     if (issue_num) {
-        var url = 'https://github.com/' + uname + '/' + repo + '/issues/' + issue_num;
+        let url = 'https://github.com/' + uname + '/' + repo + '/issues/' + issue_num;
         $('#result').html('<a target="_blank" href="' + url + '">' + msg + ' #' + issue_num + '</a>');
     } else {
         $('#result').text(msg);
@@ -129,38 +169,21 @@ function showPopup(msg, uname, repo, issue_num) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    getCurrentTabUrl((url) => {
-        chrome.tabs.executeScript({
-            code: '(' + modifyDOM + ')();' //argument here is a string but function.toString() returns function's code
-        }, (results) => {
-            var $dom = $($.parseHTML(results[0]));
-            var title = $dom.find('h1.title').text().split('Title:')[1];
-            var authors = $dom.find('div.authors').text().split('Authors:')[1];
-            var authors = authors.replace(/\n/g, '');
-            var comment = $dom.find('div.metatable').find('.comments').text();
-            var date = $dom.find('div.dateline').text().trim()
-            var year = '';
-            var pattern = /\s?([12]{1}\d{3})\)?/; // 1XXXX or 2XXXX
-            result = date.match(pattern);
-            if (result != undefined && result.length > 1) {
-                year = result[1];
-            }
-
-            if (comment != '') {
-                info = [title, authors, comment, url].join('\n');
-            } else {
-                info = [title, authors, url].join('\n');
-            }
-
-            copyToClipboard(info);
-            get_issues(title, info, year, function(issues) {
-                create_issue(title, info, year, issues, showPopup);
-            });
+    getCurrentTabUrl((url, tab) => {
+        if (url.startsWith("https://arxiv.org/pdf/")) {
+            // from pdf page to abs page
+            url = url.replace('\.pdf', '');
+            url = url.replace('pdf', 'abs');
+            postIssue(url, tab);
+        } else if (url.startsWith('https://arxiv.org/abs/')) {
+            postIssue(url, tab);
+        } else {
+            $('#result').text('Unknown arXiv page style');
 
             // hide popup automatically
             setTimeout(function () {
                 window.close();
             }, 6000);
-        });
+        }
     });
 });
