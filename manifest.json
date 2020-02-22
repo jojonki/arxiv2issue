@@ -3,7 +3,7 @@
   "name": "arxiv2issue",
   "short_name": "arxiv2issue",
   "description": "",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "background": { "scripts": ["background.js"] },
   "page_action": {
 	  "default_icon": {
@@ -29,7 +29,6 @@
   },
   "permissions": [
 	  "storage",
-	  "tabs",
 	  "https://arxiv.org/"
   ]
 }
