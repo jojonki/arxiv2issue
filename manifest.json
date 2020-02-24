@@ -2,9 +2,12 @@
   "manifest_version": 2,
   "name": "arxiv2issue",
   "short_name": "arxiv2issue",
-  "description": "",
-  "version": "0.4.7.1",
-  "background": { "scripts": ["jquery-3.4.1.min.js", "background.js"] },
+  "description": "Post a github issue of arxiv paper.",
+  "version": "0.4.7.2",
+  "background": {
+      "scripts": ["jquery-3.4.1.min.js", "background.js"],
+      "persistent": false
+  },
   "page_action": {
 	  "default_icon": {
 		  "16"  : "./icons/icon_16.png",
