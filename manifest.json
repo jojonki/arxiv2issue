@@ -29,6 +29,7 @@
   },
   "permissions": [
 	  "storage",
-	  "https://arxiv.org/"
+	  "https://arxiv.org/",
+      "https://api.github.com/"
   ]
 }
